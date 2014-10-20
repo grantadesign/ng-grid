@@ -364,7 +364,8 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
                     enableSort: self.config.enableSorting,
                     enablePinning: self.config.enablePinning,
                     enableCellEdit: self.config.enableCellEdit || self.config.enableCellEditOnFocus,
-                    cellEditableCondition: self.config.cellEditableCondition
+                    cellEditableCondition: self.config.cellEditableCondition,
+                    visible: colDef.visible
                 }, $scope, self, domUtilityService, $templateCache, $utils);
                 var indx = self.config.groups.indexOf(colDef.field);
                 if (indx !== -1) {

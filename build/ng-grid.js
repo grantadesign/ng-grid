@@ -2,7 +2,7 @@
 * ng-grid JavaScript Library
 * Authors: https://github.com/angular-ui/ng-grid/blob/master/README.md 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 08/14/2014 15:03
+* Compiled At: 10/20/2014 16:43
 ***********************************************/
 (function(window, $) {
 'use strict';
@@ -703,7 +703,7 @@ var ngColumn = function (config, $scope, grid, domUtilityService, $templateCache
                 self._visible = isVisible;
             }
         });
-        if (colDef.visible && colDef.visible != self.visible) {
+        if (localStorage.getItem(key) === null && colDef.visible !== undefined) {
             self.visible = colDef.visible;
         }
     }
@@ -1470,7 +1470,8 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
                     enableSort: self.config.enableSorting,
                     enablePinning: self.config.enablePinning,
                     enableCellEdit: self.config.enableCellEdit || self.config.enableCellEditOnFocus,
-                    cellEditableCondition: self.config.cellEditableCondition
+                    cellEditableCondition: self.config.cellEditableCondition,
+                    visible: colDef.visible
                 }, $scope, self, domUtilityService, $templateCache, $utils);
                 var indx = self.config.groups.indexOf(colDef.field);
                 if (indx !== -1) {

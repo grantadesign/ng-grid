@@ -45,8 +45,8 @@ var ngColumn = function (config, $scope, grid, domUtilityService, $templateCache
             }
         });
 
-        // initialize value
-        if (colDef.visible && colDef.visible != self.visible) {
+        // initialize value to what developer passed in if the user hasn't set this beforehand
+        if (localStorage.getItem(key) === null && colDef.visible !== undefined) {
             self.visible = colDef.visible;
         }
     }
