@@ -18,26 +18,30 @@
             });
         } else {
             grid.$groupPanel.on('mousedown', self.onGroupMouseDown).on('dragover', self.dragOver).on('drop', self.onGroupDrop);
-            grid.$headerScroller.on('mousedown', self.onHeaderMouseDown).on('dragover', self.dragOver);
+            grid.$topPanel.on('mousedown', '.ngHeaderScroller', self.onHeaderMouseDown).on('dragover', '.ngHeaderScroller', self.dragOver);
 
             grid.$groupPanel.on('$destroy', function() {
+                if (grid.$groupPanel){
                 grid.$groupPanel.off('mousedown');
+                }
 
                 grid.$groupPanel = null;
             });
 
             if (grid.config.enableColumnReordering) {
-                grid.$headerScroller.on('drop', self.onHeaderDrop);
+                grid.$topPanel.on('drop', '.ngHeaderScroller', self.onHeaderDrop);
             }
 
-            grid.$headerScroller.on('$destroy', function() {
-                grid.$headerScroller.off('mousedown');
-
-                if (grid.config.enableColumnReordering) {
-                    grid.$headerScroller.off('drop');
+            grid.$topPanel.on('$destroy', function() {
+                if (grid.$topPanel){
+                    grid.$topPanel.off('mousedown');
                 }
 
-                grid.$headerScroller = null;
+                if (grid.config.enableColumnReordering && grid.$topPanel) {
+                    grid.$topPanel.off('drop');
+                }
+
+                grid.$topPanel = null;
             });
         }
 
@@ -56,6 +60,7 @@
     self.setDraggables = function() {
         if (!grid.config.jqueryUIDraggable) {
             //Fix for FireFox. Instead of using jQuery on('dragstart', function) on find, we have to use addEventListeners for each column.
+            if (grid.$root) {
             var columns = grid.$root.find('.ngHeaderSortColumn'); //have to iterate if using addEventListener
             angular.forEach(columns, function(col){
                 if(col.className && col.className.indexOf("ngHeaderSortColumn") !== -1){
@@ -67,7 +72,7 @@
 
                         angular.element(col).on('$destroy', function() {
                             angular.element(col).off('dragstart', self.dragStart);
-                            col.removeEventListener('dragstart', self.dragStart);
+                                col.removeEventListener('dragstart', self.dragStart);
                         });
                     }
                 }
@@ -82,6 +87,7 @@
                 angular.element(sortColumn).on('$destroy', function() {
                     sortColumn.off('selectstart');
                 });
+            }
             }
         } else {
             if (grid.$root) {

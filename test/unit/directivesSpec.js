@@ -252,6 +252,93 @@ describe('directives', function () {
                         });
                     });
 
+                    it('should allow editing of complex properties that require bracket notation, have undefined paths and are functions', function () {
+                        // Update the grid data to use complex properties
+                        elm = angular.element(
+                            '<div ng-grid="gridOptions" style="width: 1000px; height: 1000px"></div>'
+                        );
+
+                        $scope.myData = [
+                            {
+                                address: function (p) {
+                                    return (p || '') + '123 Main St';
+                                },
+                                person: {
+                                    arrayProp: ['arrayPropValue'],
+                                    'first-name': 'Bob',
+                                    'B\'s age': 20,
+                                    spouse: {
+                                        'first-name': 'Suzie Q'
+                                    }
+                                }
+                            },
+                            {
+                                address: function (p) {
+                                    return (p || '') + '1600 Pennsylvania Ave.';
+                                },
+                                person: {
+                                    'first-name': 'Barack',
+                                    'B\'s age': 51
+                                }
+                            }
+                        ];
+                        $scope.gridOptions.columnDefs = [
+                            { field: 'person.first-name' },
+                            { field: 'person.B\'s age' },
+                            { field: 'person.spouse.first-name' },
+                            { field: 'address()' },
+                            { field: 'address("to").length' },
+                            { field: 'person.arrayProp[0]' }
+                        ];
+
+                        // Recompile the grid
+                        element = $compile(elm)($scope);
+                        $scope.$digest();
+
+
+                        // Check cell with spaces and intended apostrophes
+                        expect(element.find('.ngRow:eq(0) .ngCell.col1').text()).toContain($scope.myData[0].person['B\'s age']);
+                        // Second entry's spouse shouldn't exist
+                        expect(element.find('.ngRow:eq(1) .ngCell.col2').text()).toMatch(/\s*/);
+                        // Check cell with function
+                        expect(element.find('.ngRow:eq(0) .ngCell.col3').text()).toContain($scope.myData[0].address());
+                        // Check cell with array index
+                        expect(element.find('.ngRow:eq(0) .ngCell.col5').text()).toContain($scope.myData[0].person.arrayProp[0]);
+
+                        // Get the first editable cell
+                        var cell = element.find('.ngRow:eq(0) .ngCell.col0 [ng-dblclick]');
+
+                        runs(function () {
+                            // Double-click on the first editable cell
+                            browserTrigger(cell, 'dblclick');
+                        });
+                        waits(200);
+                        runs(function () {
+                            var input = cell.find('input');
+
+                            expect(input.val()).toEqual('Bob');
+
+                            // Change the value to 'Test'
+                            var testName = 'Test Name';
+                            input.val(testName);
+
+                            browserTrigger(input, $sniffer.hasEvent('input') ? 'input' : 'change');
+
+                            // The value of the input should stay 'Test'
+                            expect(input.val()).toEqual(testName);
+
+                            // The change should be reflected in the data array
+                            expect($scope.myData[0].person['first-name']).toEqual(testName);
+
+                            // Blur so the input goes away
+                            input.blur();
+
+                            // 'Test' should be visible in the cell html
+                            expect(element.find('.ngRow:eq(0) .ngCell.col0').text()).toContain(testName);
+
+                        });
+                    });
+
                     // TODO: add a test for enter key modifying the inputted contents
                 });
 
@@ -374,6 +461,56 @@ describe('directives', function () {
                         // dump(Array.prototype.forEach.mostRecentCall);
 
                         expect(angular.forEach).toHaveBeenCalled();
+                    }));
+                });
+
+                describe('sortData', function (){
+                    it('should properly sort even when no event is passed ( programatically )', inject(function($rootScope, $compile) {
+                        var sortOptions = angular.extend( scope.gridOptions, {
+                            useExternalSorting: true,
+                            columnDefs: [
+                                { field:'name' },
+                                { field:'age' }
+                            ],
+                            sortInfo: { fields: ['name'], directions: [ 'asc' ] }
+                        });
+
+                        var elm = angular.element(
+                            '<div ng-grid="gridOptions" style="width: 1000px; height: 1000px"></div>'
+                        );
+                        $compile(elm)($rootScope);
+                        $rootScope.$digest();
+
+                        //checking that the arrow is displayed on the correct row in the correct orientation
+                        //and the other columns are not changed
+                        expect( elm.find('.ngHeaderSortColumn:last .ngSortButtonUp').hasClass('ng-hide')).toBe( true );
+                        expect( elm.find('.ngHeaderSortColumn:first .ngSortButtonUp').hasClass('ng-hide')).toBe( true );
+                        expect( elm.find('.ngHeaderSortColumn:last .ngSortButtonDown').hasClass('ng-hide')).toBe( true );
+                        expect( elm.find('.ngHeaderSortColumn:first .ngSortButtonDown').hasClass('ng-hide')).toBe( false ); //the first column ( name ) show be sorted asc
+
+                        //programatically trigger sort
+                        sortOptions.sortInfo.fields[0] = 'age';
+                        $rootScope.$digest();
+
+                        //checking that the arrow is displayed on the correct row in the correct orientation
+                        //and the other columns are not changed
+                        expect( elm.find('.ngHeaderSortColumn:last .ngSortButtonUp').hasClass('ng-hide')).toBe( true );
+                        expect( elm.find('.ngHeaderSortColumn:first .ngSortButtonUp').hasClass('ng-hide')).toBe( true );
+                        expect( elm.find('.ngHeaderSortColumn:last .ngSortButtonDown').hasClass('ng-hide')).toBe( false ); //the second column ( age ) show be sorted asc
+                        expect( elm.find('.ngHeaderSortColumn:first .ngSortButtonDown').hasClass('ng-hide')).toBe( true );
+
+                        //programatically trigger sort
+                        sortOptions.sortInfo.fields[0] = 'name';
+                        sortOptions.sortInfo.directions[0] = 'desc';
+                        $rootScope.$digest();
+
+                        //checking that the arrow is displayed on the correct row in the correct orientation
+                        //and the other columns are not changed
+                        expect( elm.find('.ngHeaderSortColumn:last .ngSortButtonUp').hasClass('ng-hide')).toBe( true );
+                        expect( elm.find('.ngHeaderSortColumn:first .ngSortButtonUp').hasClass('ng-hide')).toBe( false ); //the first column ( name ) show be sorted desc
+                        expect( elm.find('.ngHeaderSortColumn:last .ngSortButtonDown').hasClass('ng-hide')).toBe( true );
+                        expect( elm.find('.ngHeaderSortColumn:first .ngSortButtonDown').hasClass('ng-hide')).toBe( true );
+
                     }));
                 });
 

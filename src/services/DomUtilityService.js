@@ -44,16 +44,18 @@
 
         $scope.$on('$destroy', function() {
             // Remove all references to DOM elements, otherwise we get memory leaks
-            $(grid.$root.parent()).off('resize.nggrid');
+            if(grid.$root) {
+                $(grid.$root.parent()).off('resize.nggrid');
 
-            grid.$root = null;
-            grid.$topPanel = null;
-            // grid.$groupPanel = null;
-            grid.$headerContainer = null;
-            // grid.$headerScroller = null;
-            grid.$headers = null;
-            grid.$canvas = null;
-            grid.$footerPanel = null;
+                grid.$root = null;
+                grid.$topPanel = null;
+                // grid.$groupPanel = null;
+                grid.$headerContainer = null;
+                // grid.$headerScroller = null;
+                grid.$headers = null;
+                grid.$canvas = null;
+                grid.$footerPanel = null;
+            }
 
             scopeDereg();
         });
@@ -70,6 +72,9 @@
         return width;
     };
     domUtilityService.UpdateGridLayout = function($scope, grid) {
+        if (!grid.$root){
+            return;
+        }
         //catch this so we can return the viewer to their original scroll after the resize!
         var scrollTop = grid.$viewport.scrollTop();
         grid.elementDims.rootMaxW = grid.$root.width();
@@ -121,8 +126,12 @@
         for (var i = 0; i < cols.length; i++) {
             var col = cols[i];
             if (col.visible !== false) {
-                css += "." + gridId + " .col" + i + " { width: " + col.width + "px; left: " + sumWidth + "px; height: " + rowHeight + "px }" +
-                    "." + gridId + " .colt" + i + " { width: " + col.width + "px; }";
+                var rightPad = 0;
+                if ((i === cols.length - 1) && (sumWidth + col.width < grid.elementDims.rootMaxW)) {
+                    rightPad = grid.elementDims.rootMaxW - sumWidth - col.width;
+                }
+                css += "." + gridId + " .col" + i + " { width: " + (col.width + rightPad) + "px; left: " + sumWidth + "px; height: " + rowHeight + "px }" +
+                    "." + gridId + " .colt" + i + " { width: " + (col.width + rightPad) + "px; }";
                 sumWidth += col.width;
             }
         }
