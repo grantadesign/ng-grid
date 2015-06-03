@@ -111,6 +111,9 @@
 								$scope.adjustScrollTop(grid.$viewport.scrollTop(), true);
                             }));
                         }
+                        else {
+                            grid.rowFactory.fixRowCache();
+                        }
                         
                         grid.footerController = new ngFooter($scope, grid);
                         //set the right styling on the container
