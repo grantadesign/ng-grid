@@ -2,7 +2,7 @@
 * ng-grid JavaScript Library
 * Authors: https://github.com/angular-ui/ng-grid/blob/master/README.md 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 07/29/2015 15:40
+* Compiled At: 07/29/2015 15:45
 ***********************************************/
 (function(window, $) {
 'use strict';
@@ -1702,6 +1702,10 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
                     return self.config.selectedItems;
                 }, function(newValue, oldValue) {
                     if (oldValue !== newValue) {
+                        if (!self.config.multiSelect && newValue && newValue.length > 1) {
+                            throw new Error("Cannot select multiple items when multiSelect is false");
+                        }
+
                         self.filteredRows.forEach(function(row) {
                             row.setSelection(row.selectionProvider.getSelection(row.entity));
                         });

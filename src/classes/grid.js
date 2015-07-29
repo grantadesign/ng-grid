@@ -590,6 +590,10 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
                     return self.config.selectedItems;
                 }, function(newValue, oldValue) {
                     if (oldValue !== newValue) {
+                        if (!self.config.multiSelect && newValue && newValue.length > 1) {
+                            throw new Error("Cannot select multiple items when multiSelect is false");
+                        }
+
                         self.filteredRows.forEach(function(row) {
                             row.setSelection(row.selectionProvider.getSelection(row.entity));
                         });
