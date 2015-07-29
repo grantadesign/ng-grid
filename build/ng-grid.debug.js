@@ -2,7 +2,7 @@
 * ng-grid JavaScript Library
 * Authors: https://github.com/angular-ui/ng-grid/blob/master/README.md 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 07/29/2015 15:04
+* Compiled At: 07/29/2015 15:40
 ***********************************************/
 (function(window, $) {
 'use strict';
@@ -1928,7 +1928,7 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
         }
     };
     self.init = function() {
-        return self.initTemplates().then(function(){
+        return self.initTemplates().then(function() {
             //factories and services
             $scope.selectionProvider = new ngSelectionProvider(self, $scope, $parse, $utils);
             $scope.domAccessProvider = new ngDomAccessProvider(self);
@@ -1936,21 +1936,21 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
             self.searchProvider = new ngSearchProvider($scope, self, $filter, $utils);
             self.styleProvider = new ngStyleProvider($scope, self);
             $scope.$on('$destroy', $scope.$watch('configGroups', function(a) {
-              var tempArr = [];
-              angular.forEach(a, function(item) {
-                tempArr.push(item.field || item);
-              });
-              self.config.groups = tempArr;
-              self.rowFactory.filteredRowsChanged();
-              $scope.$emit('ngGridEventGroups', a);
+                var tempArr = [];
+                angular.forEach(a, function(item) {
+                    tempArr.push(item.field || item);
+                });
+                self.config.groups = tempArr;
+                self.rowFactory.filteredRowsChanged();
+                $scope.$emit('ngGridEventGroups', a);
             }, true));
-             $scope.$on('$destroy', $scope.$watch('columns', function (a) {
-                if(!$scope.isColumnResizing){
+            $scope.$on('$destroy', $scope.$watch('columns', function(a) {
+                if (!$scope.isColumnResizing) {
                     domUtilityService.RebuildGrid($scope, self);
                 }
                 $scope.$emit('ngGridEventColumns', a);
             }, true));
-             $scope.$on('$destroy', $scope.$watch(function() {
+            $scope.$on('$destroy', $scope.$watch(function() {
                 return options.i18n;
             }, function(newLang) {
                 $utils.seti18n($scope, newLang);
@@ -1960,7 +1960,7 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
             if (self.config.sortInfo.fields && self.config.sortInfo.fields.length > 0) {
                 $scope.$on('$destroy', $scope.$watch(function() {
                     return self.config.sortInfo;
-                }, function(sortInfo){
+                }, function(sortInfo) {
                     if (!sortService.isSorting) {
                         self.sortColumnsInit();
                         $scope.$emit('ngGridEventSorted', self.config.sortInfo);
@@ -1968,13 +1968,43 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
                 }, true));
             }
 
-            $scope.$on('$destroy', $scope.$watchCollection(function () {
-                return self.config.selectedItems;
-            }, function (newValue, oldValue) {
-                if (oldValue !== newValue) {
-                    self.filteredRows.forEach(function (row) {
-                        row.setSelection(row.selectionProvider.getSelection(row.entity));
-                    });
+            var deregisterSelectedItemsWatcher;
+            var addWatchToSelectedItems = function() {
+                if (deregisterSelectedItemsWatcher) {
+                    deregisterSelectedItemsWatcher();
+                }
+
+                deregisterSelectedItemsWatcher = $scope.$watchCollection(function() {
+                    return self.config.selectedItems;
+                }, function(newValue, oldValue) {
+                    if (oldValue !== newValue) {
+                        self.filteredRows.forEach(function(row) {
+                            row.setSelection(row.selectionProvider.getSelection(row.entity));
+                        });
+                    }
+                }, true);
+                $scope.$on('$destroy', deregisterSelectedItemsWatcher);
+
+            }
+
+            if (self.config.enableRowSelection) {
+                addWatchToSelectedItems();
+            }
+
+            // incase enableRowSelection is set dynamically after the selectedItems watch has already been set up (or not set up)
+            $scope.$on('$destroy', $scope.$watch(function() {
+                return self.config.enableRowSelection;
+            }, function (isRowSelectionEnabled, oldValue) {
+                if (isRowSelectionEnabled === oldValue) {
+                    return;
+                }
+
+                if (isRowSelectionEnabled) {
+                    addWatchToSelectedItems();
+                } else {
+                    if (deregisterSelectedItemsWatcher) {
+                        deregisterSelectedItemsWatcher();
+                    }
                 }
             }, true));
         });
@@ -2352,7 +2382,9 @@ var ngRow = function (entity, config, selectionProvider, rowIndex, $utils) {
 	this.rowDisplayIndex = 0;
 };
 
-ngRow.prototype.setSelection = function(isSelected) {
+ngRow.prototype.setSelection = function (isSelected) {
+    // this updates the "selected" property but does not update the selectedItems array
+    //  see row.selectionProvider.setSelection or gridOptions.selectRow
     this.selected = isSelected;
     if (this.orig) {
         this.orig.selected = isSelected;
