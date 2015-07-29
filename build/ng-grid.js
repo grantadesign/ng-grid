@@ -2,7 +2,7 @@
 * ng-grid JavaScript Library
 * Authors: https://github.com/angular-ui/ng-grid/blob/master/README.md 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 07/29/2015 12:35
+* Compiled At: 07/29/2015 13:54
 ***********************************************/
 (function(window, $) {
 'use strict';
@@ -2061,6 +2061,11 @@ ngRow.prototype.setSelection = function (isSelected) {
 ngRow.prototype.continueSelection = function (event) {
 	this.selectionProvider.ChangeSelection(this, event);
 };
+ngRow.prototype.ensureSelected = function (event) {
+	if (!this.selectionProvider.getSelection(this.entity)) {
+		this.toggleSelected(event);
+	}
+};
 ngRow.prototype.ensureEntity = function (expected) {
 	if (this.entity !== expected) {
 		this.entity = expected;
@@ -2078,7 +2083,7 @@ ngRow.prototype.toggleSelected = function (event) {
 	if (this.config.selectWithCheckboxOnly && element.type !== "checkbox") {
 		this.selectionProvider.lastClickedRow = this;
 		return true;
-	} 
+	}
 	if (this.beforeSelectionChange(this, event)) {
 		this.continueSelection(event);
 	}
@@ -3262,6 +3267,25 @@ ngGridDirectives.directive('ngInput', [function() {
     };
 }]);
 
+ngGridDirectives.directive('ngRightClick', function ($parse) {
+
+    return function ($scope, $element, $attrs) {
+
+        var eventHandler = $parse($attrs.ngRightClick);
+
+        $element.on('contextmenu', function (event) {
+            event.preventDefault();
+            eventHandler($scope, { $event: event });
+
+            if (!$scope.$root.$$phase) {
+                $scope.$apply();
+            }
+
+        });
+
+    };
+
+});
 ngGridDirectives.directive('ngRow', ['$compile', '$domUtilityService', '$templateCache', function ($compile, domUtilityService, $templateCache) {
     var ngRow = {
         scope: false,
@@ -3299,7 +3323,7 @@ angular.module('ngGrid.directives').directive('ngViewport', ['$compile', '$domUt
         var prevScollTop = 0;
 
         var canvas = $('.ngCanvas', elm);
-        var template = "<div row-id='{{ row.rowIndex }}' ng-style=\"rowStyle(row)\" ng-click=\"row.toggleSelected($event)\" ng-class=\"row.alternatingRowClass()\" ng-row></div>\r";
+        var template = '<div row-id="{{ row.rowIndex }}" ng-style="rowStyle(row)" ng-click="row.toggleSelected($event)" ng-right-click="row.ensureSelected($event)" ng-class="row.alternatingRowClass()" ng-row></div>\r';
         var currentlyRenderedRowsLookup = [];
 
         $scope.$on('ngGridEventRows', function (ctx, rowsToRender) {

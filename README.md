@@ -46,7 +46,7 @@ _The bare bones_:
 <script>
     angular.module('myApp',['ngGrid', ... {other includes}]);
 </script>
-<link rel="stylesheet" type="text/css" href="../ng-grid.css" /> 
+<link rel="stylesheet" type="text/css" href="../ng-grid.css" />
 <body ng-app="myApp">
     <div ng-grid="myOptions"></div>
 </body>
@@ -60,7 +60,7 @@ function MyCtrl($scope) {
                      {name: "Nephi", age: 29},
                      {name: "Enos", age: 34}];
 	$scope.myOptions = { data: 'myData' };
-	// you can also specify data as: $scope.myOptions = { data: $scope.myData }. 
+	// you can also specify data as: $scope.myOptions = { data: $scope.myData }.
 	// However, updates to the underlying data will not be reflected in the grid
 };
 
@@ -81,7 +81,7 @@ Make sure to set your CHROME_BIN environment variable to the full path to chrome
 ### Grunt tasks
 
 There are a few grunt tasks for running tests:
-    
+
     # Run unit tests
     > grunt karma:unit
     # Or use this alias:
@@ -119,6 +119,6 @@ There is a task for CI testing with PhantomJS
 ### Selecting browsers
 
 All the test tasks accept a `--browsers` command line option that will be passed to karma.
-    
+
     # Automatically re-run tests in both Chrome and FF.
     grunt testwatch --browsers=Chrome,Firefox
