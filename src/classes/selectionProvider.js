@@ -148,14 +148,8 @@ var ngSelectionProvider = function (grid, $scope, $parse, $utils) {
                         self.selectedItems.push(rowItem.entity);
                     }
                 }
-                rowItem.selected = isSelected;
-                if (rowItem.orig) {
-                    rowItem.orig.selected = isSelected;
-                }
-                if (rowItem.clone) {
-                    rowItem.clone.selected = isSelected;
-                }
-                rowItem.afterSelectionChange(rowItem);
+                self.lastClickedRow = rowItem;
+                rowItem.setSelection(isSelected);
             }
         }
     };

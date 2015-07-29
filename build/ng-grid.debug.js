@@ -2,7 +2,7 @@
 * ng-grid JavaScript Library
 * Authors: https://github.com/angular-ui/ng-grid/blob/master/README.md 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 07/29/2015 13:54
+* Compiled At: 07/29/2015 15:04
 ***********************************************/
 (function(window, $) {
 'use strict';
@@ -1973,7 +1973,7 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
             }, function (newValue, oldValue) {
                 if (oldValue !== newValue) {
                     self.filteredRows.forEach(function (row) {
-                        row.selected = row.selectionProvider.getSelection(row.entity);
+                        row.setSelection(row.selectionProvider.getSelection(row.entity));
                     });
                 }
             }, true));
@@ -2352,9 +2352,15 @@ var ngRow = function (entity, config, selectionProvider, rowIndex, $utils) {
 	this.rowDisplayIndex = 0;
 };
 
-ngRow.prototype.setSelection = function (isSelected) {
-	this.selectionProvider.setSelection(this, isSelected);
-	this.selectionProvider.lastClickedRow = this;
+ngRow.prototype.setSelection = function(isSelected) {
+    this.selected = isSelected;
+    if (this.orig) {
+        this.orig.selected = isSelected;
+    }
+    if (this.clone) {
+        this.clone.selected = isSelected;
+    }
+    this.afterSelectionChange(this);
 };
 ngRow.prototype.continueSelection = function (event) {
 	this.selectionProvider.ChangeSelection(this, event);
@@ -3049,14 +3055,8 @@ var ngSelectionProvider = function (grid, $scope, $parse, $utils) {
                         self.selectedItems.push(rowItem.entity);
                     }
                 }
-                rowItem.selected = isSelected;
-                if (rowItem.orig) {
-                    rowItem.orig.selected = isSelected;
-                }
-                if (rowItem.clone) {
-                    rowItem.clone.selected = isSelected;
-                }
-                rowItem.afterSelectionChange(rowItem);
+                self.lastClickedRow = rowItem;
+                rowItem.setSelection(isSelected);
             }
         }
     };
@@ -3481,10 +3481,12 @@ ngGridDirectives.directive('ngGrid', ['$compile', '$filter', '$templateCache', '
                         // method for user to select a specific row programatically
                         options.selectRow = function (rowIndex, state) {
                             if (grid.rowCache[rowIndex]) {
-                                if (grid.rowCache[rowIndex].clone) {
-                                    grid.rowCache[rowIndex].clone.setSelection(state ? true : false);
-                                } 
-                                grid.rowCache[rowIndex].setSelection(state ? true : false);
+                                var cloneRow = grid.rowCache[rowIndex].clone;
+                                if (cloneRow) {
+                                    cloneRow.selectionProvider.setSelection(cloneRow, state ? true : false);
+                                }
+                                var row = grid.rowCache[rowIndex];
+                                row.selectionProvider.setSelection(row, state ? true : false);
                             }
                         };
                         // method for user to select the row by data item programatically

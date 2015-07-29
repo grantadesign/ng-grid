@@ -133,10 +133,12 @@
                         // method for user to select a specific row programatically
                         options.selectRow = function (rowIndex, state) {
                             if (grid.rowCache[rowIndex]) {
-                                if (grid.rowCache[rowIndex].clone) {
-                                    grid.rowCache[rowIndex].clone.setSelection(state ? true : false);
-                                } 
-                                grid.rowCache[rowIndex].setSelection(state ? true : false);
+                                var cloneRow = grid.rowCache[rowIndex].clone;
+                                if (cloneRow) {
+                                    cloneRow.selectionProvider.setSelection(cloneRow, state ? true : false);
+                                }
+                                var row = grid.rowCache[rowIndex];
+                                row.selectionProvider.setSelection(row, state ? true : false);
                             }
                         };
                         // method for user to select the row by data item programatically

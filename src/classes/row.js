@@ -13,8 +13,16 @@ var ngRow = function (entity, config, selectionProvider, rowIndex, $utils) {
 };
 
 ngRow.prototype.setSelection = function (isSelected) {
-	this.selectionProvider.setSelection(this, isSelected);
-	this.selectionProvider.lastClickedRow = this;
+    // this updates the "selected" property but does not update the selectedItems array
+    //  see row.selectionProvider.setSelection or gridOptions.selectRow
+    this.selected = isSelected;
+    if (this.orig) {
+        this.orig.selected = isSelected;
+    }
+    if (this.clone) {
+        this.clone.selected = isSelected;
+    }
+    this.afterSelectionChange(this);
 };
 ngRow.prototype.continueSelection = function (event) {
 	this.selectionProvider.ChangeSelection(this, event);

@@ -585,7 +585,7 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
             }, function (newValue, oldValue) {
                 if (oldValue !== newValue) {
                     self.filteredRows.forEach(function (row) {
-                        row.selected = row.selectionProvider.getSelection(row.entity);
+                        row.setSelection(row.selectionProvider.getSelection(row.entity));
                     });
                 }
             }, true));
