@@ -121,7 +121,7 @@ var ngSelectionProvider = function (grid, $scope, $parse, $utils) {
     self.setSelection = function(rowItem, isSelected, evt) {
         if (grid.config.enableRowSelection) {
             var allowMultiSelect = self.multi
-                                && ((evt && evt.ctrlKey) || (!evt))
+                                && ((evt && (evt.ctrlKey || evt.metaKey)) || (!evt))
                                 && self.selectedItems.length > 0;
             
             if (grid.config.enableRowSelection) {

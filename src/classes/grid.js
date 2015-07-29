@@ -579,6 +579,16 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
                     }
                 }, true));
             }
+
+            $scope.$on('$destroy', $scope.$watchCollection(function () {
+                return self.config.selectedItems;
+            }, function (newValue, oldValue) {
+                if (oldValue !== newValue) {
+                    self.filteredRows.forEach(function (row) {
+                        row.selected = row.selectionProvider.getSelection(row.entity);
+                    });
+                }
+            }, true));
         });
 
         // var p = $q.defer();
