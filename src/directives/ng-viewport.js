@@ -5,7 +5,7 @@ angular.module('ngGrid.directives').directive('ngViewport', ['$compile', '$domUt
         var prevScollTop = 0;
 
         var canvas = $('.ngCanvas', elm);
-        var template = "<div row-id='{{ row.rowIndex }}' ng-style=\"rowStyle(row)\" ng-click=\"row.toggleSelected($event)\" ng-class=\"row.alternatingRowClass()\" ng-row></div>\r";
+        var template = '<div row-id="{{ row.rowIndex }}" ng-style="rowStyle(row)" ng-click="row.toggleSelected($event)" ng-right-click="row.ensureSelected($event)" ng-class="row.alternatingRowClass()" ng-row></div>\r';
         var currentlyRenderedRowsLookup = [];
 
         $scope.$on('ngGridEventRows', function (ctx, rowsToRender) {
@@ -41,7 +41,7 @@ angular.module('ngGrid.directives').directive('ngViewport', ['$compile', '$domUt
 
             var allHtmlRows = $('[ng-row]', canvas);
 
-            // can this be done more efficiently
+            // can this be done more efficiently n
             rowsToReplace.length > 0 && allHtmlRows.toArray().forEach(function (renderedRow) {
                 var indexOfRenderedRow = Number(renderedRow.attributes['row-id'].value);
 
@@ -97,7 +97,7 @@ angular.module('ngGrid.directives').directive('ngViewport', ['$compile', '$domUt
                         // TODO: sort by top (absolute position), and replace based upon that value instead of rowIndex
                         var sortedRows = _(allRows) // sorting by the css value seems to be slow in IE, so using the row index instead
                             .sortBy(function (r) {
-                                // Note: also may not be able to rely on this being a number yet, if angular hasn't evaluated it.   
+                                // Note: also may not be able to rely on this being a number yet, if angular hasn't evaluated it.
                                 return Number(r.attributes['row-id'].value); // sort by row-id
                             });
 

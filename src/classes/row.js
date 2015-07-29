@@ -19,6 +19,11 @@ ngRow.prototype.setSelection = function (isSelected) {
 ngRow.prototype.continueSelection = function (event) {
 	this.selectionProvider.ChangeSelection(this, event);
 };
+ngRow.prototype.ensureSelected = function (event) {
+	if (!this.selectionProvider.getSelection(this.entity)) {
+		this.toggleSelected(event);
+	}
+};
 ngRow.prototype.ensureEntity = function (expected) {
 	if (this.entity !== expected) {
 		// Update the entity and determine our selected property
@@ -31,14 +36,14 @@ ngRow.prototype.toggleSelected = function (event) {
 		return true;
 	}
 	var element = event.target || event;
-	//check and make sure its not the bubbling up of our checked 'click' event 
+	//check and make sure its not the bubbling up of our checked 'click' event
 	if (element.type === "checkbox" && element.parentElement.className !== "ngSelectionCell ng-scope") {
 		return true;
 	}
 	if (this.config.selectWithCheckboxOnly && element.type !== "checkbox") {
 		this.selectionProvider.lastClickedRow = this;
 		return true;
-	} 
+	}
 	if (this.beforeSelectionChange(this, event)) {
 		this.continueSelection(event);
 	}
