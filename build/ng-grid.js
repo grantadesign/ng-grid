@@ -2,7 +2,7 @@
 * ng-grid JavaScript Library
 * Authors: https://github.com/angular-ui/ng-grid/blob/master/README.md 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 07/29/2015 15:45
+* Compiled At: 07/30/2015 11:31
 ***********************************************/
 (function(window, $) {
 'use strict';
@@ -1701,30 +1701,27 @@ var ngGrid = function ($scope, $attrs, options, sortService, domUtilityService, 
                 deregisterSelectedItemsWatcher = $scope.$watchCollection(function() {
                     return self.config.selectedItems;
                 }, function(newValue, oldValue) {
-                    if (oldValue !== newValue) {
-                        if (!self.config.multiSelect && newValue && newValue.length > 1) {
-                            throw new Error("Cannot select multiple items when multiSelect is false");
-                        }
-
-                        self.filteredRows.forEach(function(row) {
-                            row.setSelection(row.selectionProvider.getSelection(row.entity));
-                        });
+                    if (oldValue === newValue) {
+                        return;
                     }
+
+                    if (!self.config.multiSelect && newValue && newValue.length > 1) {
+                        throw new Error("Cannot select multiple items when multiSelect is false");
+                    }
+
+                    self.filteredRows.forEach(function(row) {
+                        var shouldRowBeSelected = row.selectionProvider.getSelection(row.entity);
+                        if (shouldRowBeSelected !== row.selected) {
+                            row.setSelection(shouldRowBeSelected);
+                        }
+                    });
                 }, true);
                 $scope.$on('$destroy', deregisterSelectedItemsWatcher);
-
             }
 
-            if (self.config.enableRowSelection) {
-                addWatchToSelectedItems();
-            }
             $scope.$on('$destroy', $scope.$watch(function() {
                 return self.config.enableRowSelection;
-            }, function (isRowSelectionEnabled, oldValue) {
-                if (isRowSelectionEnabled === oldValue) {
-                    return;
-                }
-
+            }, function (isRowSelectionEnabled) {
                 if (isRowSelectionEnabled) {
                     addWatchToSelectedItems();
                 } else {
