@@ -16,18 +16,18 @@
         return { "height": grid.config.headerRowHeight + "px" };
     };
     $scope.topPanelStyle = function() {
-        return { "width": grid.rootDim.outerWidth + "px", "height": $scope.topPanelHeight() + "px" };
+        return { "height": $scope.topPanelHeight() + "px" };
     };
     $scope.headerStyle = function() {
-        return { "width": grid.rootDim.outerWidth + "px", "height": grid.config.headerRowHeight + "px" };
+        return { "height": grid.config.headerRowHeight + "px" };
     };
     $scope.groupPanelStyle = function () {
-        return { "width": grid.rootDim.outerWidth + "px", "height": "32px" };
+        return { "height": "32px" };
     };
     $scope.viewportStyle = function() {
-        return { "width": grid.rootDim.outerWidth + "px", "height": $scope.viewportDimHeight() + "px" };
+        return { "height": $scope.viewportDimHeight() + "px" };
     };
     $scope.footerStyle = function() {
-        return { "width": grid.rootDim.outerWidth + "px", "height": $scope.footerRowHeight + "px" };
+        return { "height": $scope.footerRowHeight + "px" };
     };
 };

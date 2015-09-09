@@ -150,6 +150,7 @@
     };
     domUtilityService.setColLeft.immediate = 1;
     domUtilityService.RebuildGrid = function($scope, grid){
+        domUtilityService.setStyleText(grid, "");
         domUtilityService.UpdateGridLayout($scope, grid);
         if (grid.config.maintainColumnRatios == null || grid.config.maintainColumnRatios) {
             grid.configureColumnWidths();
