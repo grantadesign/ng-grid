@@ -231,29 +231,36 @@
         } else {
             grid.$viewport.attr('tabIndex', grid.config.tabIndex);
         }
+
         // resize on window resize
         var windowThrottle;
-        var windowResize = function(){
+        var hasResized = false;
+        var shouldResize = false;
+        var resize = function(){
+            if (!hasResized) {
+                domUtilityService.RebuildGrid($scope,grid);
+                hasResized = true;
+            }
+            else {
+                shouldResize = true;
+            }
+
+            domUtilityService.RebuildGrid($scope,grid);
             clearTimeout(windowThrottle);
             windowThrottle = setTimeout(function() {
-                //in function for IE8 compatibility
-                domUtilityService.RebuildGrid($scope,grid);
+                if(shouldResize){
+                    //in function for IE8 compatibility
+                    domUtilityService.RebuildGrid($scope,grid);
+                }
+                hasResized = false;
+                shouldResize = false;
             }, 100);
         };
-        $(window).on('resize.nggrid', windowResize);
-        // resize on parent resize as well.
-        var parentThrottle;
-        var parentResize = function() {
-            clearTimeout(parentThrottle);
-            parentThrottle = setTimeout(function() {
-                //in function for IE8 compatibility
-                domUtilityService.RebuildGrid($scope,grid);
-            }, 100);
-        };
-        $(grid.$root.parent()).on('resize.nggrid', parentResize);
+        $(window).on('resize.nggrid', resize);
+        $(grid.$root.parent()).on('resize.nggrid', resize);
 
-        $scope.$on('$destroy', function(){
-            $(window).off('resize.nggrid', windowResize);
+        $scope.$on('$destroy', function() {
+            $(window).off('resize.nggrid', resize);
             // $(grid.$root.parent()).off('resize.nggrid', parentResize);
         });
     };
