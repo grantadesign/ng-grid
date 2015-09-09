@@ -118,16 +118,16 @@
             sumWidth = 0;
 
         var trw = $scope.totalRowWidth();
-        css = "." + gridId + " .ngCanvas { width: " + trw + "px; }" +
-            "." + gridId + " .ngRow { width: " + trw + "px; }" +
-            "." + gridId + " .ngCanvas { width: " + trw + "px; }" +
-            "." + gridId + " .ngHeaderScroller { width: " + (trw + domUtilityService.ScrollH) + "px}";
+        css = "." + gridId + " .ngCanvas { width: " + trw + "px; }" + "\n" +
+              "." + gridId + " .ngRow { width: " + trw + "px; }" + "\n" +
+              "." + gridId + " .ngCanvas { width: " + trw + "px; }" + "\n" +
+              "." + gridId + " .ngHeaderScroller { width: " + (trw + domUtilityService.ScrollH) + "px}" + "\n";
 
         for (var i = 0; i < cols.length; i++) {
             var col = cols[i];
             if (col.visible !== false) {
-                css += "." + gridId + " .col" + i + " { width: " + col.width + "px; left: " + sumWidth + "px; height: " + rowHeight + "px }" +
-                    "." + gridId + " .colt" + i + " { width: " + col.width + "px; }";
+                css += "." + gridId + " .col" + i + " { width: " + col.width + "px; left: " + sumWidth + "px; height: " + rowHeight + "px }" + "\n"
+                       "." + gridId + " .colt" + i + " { width: " + col.width + "px; }" + "\n";
                 sumWidth += col.width;
             }
         }
