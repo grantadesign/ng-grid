@@ -2,7 +2,7 @@
 * ng-grid JavaScript Library
 * Authors: https://github.com/angular-ui/ng-grid/blob/master/README.md 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 07/30/2015 11:31
+* Compiled At: 09/09/2015 14:19
 ***********************************************/
 (function(window, $) {
 'use strict';
@@ -339,16 +339,16 @@ angular.module('ngGrid.services').factory('$domUtilityService',['$utilityService
             sumWidth = 0;
 
         var trw = $scope.totalRowWidth();
-        css = "." + gridId + " .ngCanvas { width: " + trw + "px; }" +
-            "." + gridId + " .ngRow { width: " + trw + "px; }" +
-            "." + gridId + " .ngCanvas { width: " + trw + "px; }" +
-            "." + gridId + " .ngHeaderScroller { width: " + (trw + domUtilityService.ScrollH) + "px}";
+        css = "." + gridId + " .ngCanvas { width: " + trw + "px; }" + "\n" +
+              "." + gridId + " .ngRow { width: " + trw + "px; }" + "\n" +
+              "." + gridId + " .ngCanvas { width: " + trw + "px; }" + "\n" +
+              "." + gridId + " .ngHeaderScroller { width: " + (trw + domUtilityService.ScrollH) + "px}" + "\n";
 
         for (var i = 0; i < cols.length; i++) {
             var col = cols[i];
             if (col.visible !== false) {
-                css += "." + gridId + " .col" + i + " { width: " + col.width + "px; left: " + sumWidth + "px; height: " + rowHeight + "px }" +
-                    "." + gridId + " .colt" + i + " { width: " + col.width + "px; }";
+                css += "." + gridId + " .col" + i + " { width: " + col.width + "px; left: " + sumWidth + "px; height: " + rowHeight + "px }" + "\n"
+                       "." + gridId + " .colt" + i + " { width: " + col.width + "px; }" + "\n";
                 sumWidth += col.width;
             }
         }
@@ -371,6 +371,7 @@ angular.module('ngGrid.services').factory('$domUtilityService',['$utilityService
     };
     domUtilityService.setColLeft.immediate = 1;
     domUtilityService.RebuildGrid = function($scope, grid){
+        domUtilityService.setStyleText(grid, "");
         domUtilityService.UpdateGridLayout($scope, grid);
         if (grid.config.maintainColumnRatios == null || grid.config.maintainColumnRatios) {
             grid.configureColumnWidths();
@@ -1107,7 +1108,7 @@ var ngEventProvider = function (grid, $scope, domUtilityService, $timeout) {
             $timeout(self.setDraggables);
         }));
     };
-    self.dragStart = function(evt){		
+    self.dragStart = function(evt){
       //FireFox requires there to be dataTransfer if you want to drag and drop.
       evt.dataTransfer.setData('text', ''); //cannot be empty string
     };
@@ -1138,9 +1139,9 @@ var ngEventProvider = function (grid, $scope, domUtilityService, $timeout) {
             if (navigator.userAgent.indexOf("MSIE") !== -1){
                 //call native IE dragDrop() to start dragging
                 var sortColumn = grid.$root.find('.ngHeaderSortColumn');
-                sortColumn.bind('selectstart', function () { 
-                    this.dragDrop(); 
-                    return false; 
+                sortColumn.bind('selectstart', function () {
+                    this.dragDrop();
+                    return false;
                 });
                 angular.element(sortColumn).on('$destroy', function() {
                     sortColumn.off('selectstart');
@@ -1175,17 +1176,17 @@ var ngEventProvider = function (grid, $scope, domUtilityService, $timeout) {
                 if (!grid.config.jqueryUIDraggable) {
                     groupItem.attr('draggable', 'true');
                     if(this.addEventListener){//IE8 doesn't have drag drop or event listeners
-                        this.addEventListener('dragstart', self.dragStart); 
+                        this.addEventListener('dragstart', self.dragStart);
 
                         angular.element(this).on('$destroy', function() {
-                            this.removeEventListener('dragstart', self.dragStart); 
+                            this.removeEventListener('dragstart', self.dragStart);
                         });
                     }
                     if (navigator.userAgent.indexOf("MSIE") !== -1){
                         //call native IE dragDrop() to start dragging
-                        groupItem.bind('selectstart', function () { 
-                            this.dragDrop(); 
-                            return false; 
+                        groupItem.bind('selectstart', function () {
+                            this.dragDrop();
+                            return false;
                         });
 
                         groupItem.on('$destroy', function() {
@@ -1280,7 +1281,7 @@ var ngEventProvider = function (grid, $scope, domUtilityService, $timeout) {
     self.assignGridEventHandlers = function() {
         //Chrome and firefox both need a tab index so the grid can recieve focus.
         //need to give the grid a tabindex if it doesn't already have one so
-        //we'll just give it a tab index of the corresponding gridcache index 
+        //we'll just give it a tab index of the corresponding gridcache index
         //that way we'll get the same result every time it is run.
         //configurable within the options.
         if (grid.config.tabIndex === -1) {
@@ -1289,29 +1290,36 @@ var ngEventProvider = function (grid, $scope, domUtilityService, $timeout) {
         } else {
             grid.$viewport.attr('tabIndex', grid.config.tabIndex);
         }
+
         // resize on window resize
         var windowThrottle;
-        var windowResize = function(){
+        var hasResized = false;
+        var shouldResize = false;
+        var resize = function(){
+            if (!hasResized) {
+                domUtilityService.RebuildGrid($scope,grid);
+                hasResized = true;
+            }
+            else {
+                shouldResize = true;
+            }
+
+            domUtilityService.RebuildGrid($scope,grid);
             clearTimeout(windowThrottle);
             windowThrottle = setTimeout(function() {
-                //in function for IE8 compatibility
-                domUtilityService.RebuildGrid($scope,grid);
+                if(shouldResize){
+                    //in function for IE8 compatibility
+                    domUtilityService.RebuildGrid($scope,grid);
+                }
+                hasResized = false;
+                shouldResize = false;
             }, 100);
         };
-        $(window).on('resize.nggrid', windowResize);
-        // resize on parent resize as well.
-        var parentThrottle;
-        var parentResize = function() {
-            clearTimeout(parentThrottle);
-            parentThrottle = setTimeout(function() {
-                //in function for IE8 compatibility
-                domUtilityService.RebuildGrid($scope,grid);
-            }, 100);
-        };
-        $(grid.$root.parent()).on('resize.nggrid', parentResize);
+        $(window).on('resize.nggrid', resize);
+        $(grid.$root.parent()).on('resize.nggrid', resize);
 
-        $scope.$on('$destroy', function(){
-            $(window).off('resize.nggrid', windowResize);
+        $scope.$on('$destroy', function() {
+            $(window).off('resize.nggrid', resize);
             // $(grid.$root.parent()).off('resize.nggrid', parentResize);
         });
     };
@@ -3141,19 +3149,19 @@ var ngStyleProvider = function($scope, grid) {
         return { "height": grid.config.headerRowHeight + "px" };
     };
     $scope.topPanelStyle = function() {
-        return { "width": grid.rootDim.outerWidth + "px", "height": $scope.topPanelHeight() + "px" };
+        return { "height": $scope.topPanelHeight() + "px" };
     };
     $scope.headerStyle = function() {
-        return { "width": grid.rootDim.outerWidth + "px", "height": grid.config.headerRowHeight + "px" };
+        return { "height": grid.config.headerRowHeight + "px" };
     };
     $scope.groupPanelStyle = function () {
-        return { "width": grid.rootDim.outerWidth + "px", "height": "32px" };
+        return { "height": "32px" };
     };
     $scope.viewportStyle = function() {
-        return { "width": grid.rootDim.outerWidth + "px", "height": $scope.viewportDimHeight() + "px" };
+        return { "height": $scope.viewportDimHeight() + "px" };
     };
     $scope.footerStyle = function() {
-        return { "width": grid.rootDim.outerWidth + "px", "height": $scope.footerRowHeight + "px" };
+        return { "height": $scope.footerRowHeight + "px" };
     };
 };
 ngGridDirectives.directive('ngCellHasFocus', ['$domUtilityService',
