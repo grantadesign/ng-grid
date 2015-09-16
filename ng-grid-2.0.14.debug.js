@@ -2,7 +2,7 @@
 * ng-grid JavaScript Library
 * Authors: https://github.com/angular-ui/ng-grid/blob/master/README.md 
 * License: MIT (http://www.opensource.org/licenses/mit-license.php)
-* Compiled At: 09/14/2015 18:04
+* Compiled At: 09/16/2015 15:49
 ***********************************************/
 (function(window, $) {
 'use strict';
@@ -3807,7 +3807,6 @@ angular.module('ngGrid.directives').directive('ngViewport', ['$compile', '$domUt
                 }
             });
 
-
             if (currentlyRenderedRowsLength > rowsToRender.length) {
                 removeExcessHtmlRows();
             }
@@ -3843,22 +3842,20 @@ angular.module('ngGrid.directives').directive('ngViewport', ['$compile', '$domUt
             if (newRowsToRender.length) {
                 var allRows = $('[ng-row]', canvas);
 
+                // sorting by the css value seems to be slow in IE, so using the row index instead
+                var htmlRowAndId = allRows.map(function(idx, rowHtml) { return { html: rowHtml, rowIndex: Number(rowHtml.attributes['row-id'].value) }; })
+                var orderedHtmlRows = _(htmlRowAndId).sortBy(function(row) { return row.rowIndex; });
+
                 newRowsToRender.forEach(function (rowToRender) {
 
                     if (allRows.length >= rowsToRender.length) { // reuse html rows when there are enough of them in the dom
 
-                        // TODO: sort by top (absolute position), and replace based upon that value instead of rowIndex
-                        var sortedRows = _(allRows) // sorting by the css value seems to be slow in IE, so using the row index instead
-                            .sortBy(function (r) {
-                                // Note: also may not be able to rely on this being a number yet, if angular hasn't evaluated it.
-                                return Number(r.attributes['row-id'].value); // sort by row-id
-                            });
-
                         // if scrolling down re-use the first row, otherwise use the last
-                        var currentlyRenderedRowIdxs = Object.keys(currentlyRenderedRowsLookup);
-                        var rowToReuse = rowToRender.rowIndex > currentlyRenderedRowIdxs[currentlyRenderedRowIdxs.length - 1]
-                                       ? sortedRows[0]
-                                       : sortedRows[sortedRows.length - 1];
+                        var lastRenderedRow = orderedHtmlRows[orderedHtmlRows.length - 1];
+                        var rowToReuse = (rowToRender.rowIndex > lastRenderedRow.rowIndex)
+                             ? orderedHtmlRows.shift().html
+                             : orderedHtmlRows.pop().html;
+
                         var scopeOfRowToReuse = angular.element(rowToReuse).scope();
                         rowToRender.elm = $(rowToReuse);
                         scopeOfRowToReuse.row = rowToRender;
