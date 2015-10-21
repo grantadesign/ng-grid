@@ -1,4 +1,4 @@
-ngGridDirectives.directive('ngRightClick', function ($parse) {
+ngGridDirectives.directive('ngRightClick', ["$parse", function ($parse) {
 
     return function ($scope, $element, $attrs) {
 
@@ -16,4 +16,4 @@ ngGridDirectives.directive('ngRightClick', function ($parse) {
 
     };
 
-});
+}]);
